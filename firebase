@@ -1,0 +1,137 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+
+class HomeScreen extends StatefulWidget {
+  HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final String collectionPath = 'students';
+  final fnCtrl = TextEditingController();
+  final lnCtrl = TextEditingController();
+  final degree = TextEditingController();
+  final search = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SSS'),
+        centerTitle: true,
+        actions: [IconButton(onPressed: showDia, icon: Icon(Icons.add))],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: search,
+                onChanged: (value) {
+                  setState(() {});
+                },
+                decoration: InputDecoration(border: OutlineInputBorder()),
+              ),
+            ),
+            Gap(10),
+            Expanded(
+              child: FutureBuilder(
+                future:
+                    search.text == ""
+                        ? FirebaseFirestore.instance
+                            .collection(collectionPath)
+                            .get()
+                        : FirebaseFirestore.instance
+                            .collection(collectionPath)
+                            .where('firstName', isEqualTo: search.text)
+                            .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.data == null) {
+                    return Text('No records');
+                  }
+                  var documents = snapshot.data!.docs;
+                  return ListView.builder(
+                    itemCount: documents.length,
+                    itemBuilder: (context, index) {
+                      var dat = documents[index];
+                      return Dismissible(
+                        key: UniqueKey(),
+                        onDismissed: (direction) async {
+                          await FirebaseFirestore.instance
+                              .collection(collectionPath)
+                              .doc(dat.id)
+                              .delete();
+                        },
+                        child: Card(
+                          child: ListTile(
+                            title: Text(
+                              dat['firstName'] + ' ' + dat['lastName'],
+                            ),
+                            subtitle: Text(dat['degree']),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void showDia() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  label: Text('First Name'),
+                  border: OutlineInputBorder(),
+                ),
+                controller: fnCtrl,
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  label: Text('Last Name'),
+                  border: OutlineInputBorder(),
+                ),
+                controller: lnCtrl,
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  label: Text('Degree'),
+                  border: OutlineInputBorder(),
+                ),
+                controller: degree,
+              ),
+              ElevatedButton(onPressed: doAdd, child: Text('Add')),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void doAdd() async {
+    await FirebaseFirestore.instance.collection(collectionPath).add({
+      'firstName': fnCtrl.text,
+      'lastName': lnCtrl.text,
+      'degree': degree.text,
+    });
+    setState(() {});
+    ;
+  }
+}
