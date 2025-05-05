@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final String collectionPath = 'students';
+  final String collectionPath = "/students/EE7QVaf674qLGDHJp98K/contacts";
   final fnCtrl = TextEditingController();
   final lnCtrl = TextEditingController();
   final degree = TextEditingController();
@@ -38,16 +38,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Gap(10),
             Expanded(
-              child: FutureBuilder(
-                future:
+              child: StreamBuilder(
+                stream:
                     search.text == ""
                         ? FirebaseFirestore.instance
                             .collection(collectionPath)
-                            .get()
+                            .snapshots()
                         : FirebaseFirestore.instance
                             .collection(collectionPath)
                             .where('firstName', isEqualTo: search.text)
-                            .get(),
+                            .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -69,12 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               .delete();
                         },
                         child: Card(
-                          child: ListTile(
-                            title: Text(
-                              dat['firstName'] + ' ' + dat['lastName'],
-                            ),
-                            subtitle: Text(dat['degree']),
-                          ),
+                          child: ListTile(title: Text(dat['fullname'])),
                         ),
                       );
                     },
@@ -131,6 +126,10 @@ class _HomeScreenState extends State<HomeScreen> {
       'lastName': lnCtrl.text,
       'degree': degree.text,
     });
+    Navigator.of(context).pop();
+    fnCtrl.clear();
+    lnCtrl.clear();
+    degree.clear();
     setState(() {});
     ;
   }
