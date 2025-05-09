@@ -1,0 +1,145 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(AnimateApp());
+}
+
+class AnimateApp extends StatelessWidget {
+  const AnimateApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AnimateScreen(),
+    );
+  }
+}
+
+class AnimateScreen extends StatefulWidget {
+  const AnimateScreen({super.key});
+
+  @override
+  State<AnimateScreen> createState() => _AnimateScreenState();
+}
+
+class _AnimateScreenState extends State<AnimateScreen>
+    with TickerProviderStateMixin {
+  late AnimationController animationController;
+  late AnimationController animationController2;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+      // lowerBound: 0,
+      // upperBound: 250,
+    );
+    animationController2 = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              animationController.forward().then((_) {
+                animationController2.forward();
+              });
+            },
+            icon: Icon(Icons.play_arrow),
+          ),
+        ],
+        title: Text("Explicit Animation"),
+        centerTitle: true,
+      ),
+
+      body: AnimatedBuilder(
+        animation: animationController,
+        child: Center(child: Image.asset('assets/download.png')),
+        builder: (context, childWidget) {
+          // return FadeTransition(
+          //   opacity: Tween<double>(begin: 0, end: 1).animate(
+          //     CurvedAnimation(
+          //       parent: animationController,
+          //       curve: Curves.elasticInOut,
+          //     ),
+          //   ),
+          //   child: childWidget,
+          // );
+          // return Opacity(
+          //   opacity: animationController.value,
+          //   child: Center(child: Image.asset('assets/download.png')),
+          // );
+          // return Center(
+          //   child: Container(
+          //     color: Colors.red,
+          //     width: animationController.value,
+          //     height: animationController.value,
+          //   ),
+          // );
+          // return SlideTransition(
+          //   position: Tween<Offset>(
+          //     begin: Offset(-1, 0),
+          //     end: Offset(0, 0),
+          //   ).animate(
+          //     CurvedAnimation(
+          //       parent: animationController,
+          //       curve: Curves.easeInOut,
+          //     ),
+          //   ),
+          //   child: childWidget,
+          // );
+          // return ScaleTransition(
+          //   scale: Tween<double>(begin: 1, end: 0).animate(
+          //     CurvedAnimation(
+          //       parent: animationController,
+          //       curve: Curves.easeIn,
+          //     ),
+          //   ),
+          //   // alignment: Alignment.bottomRight,
+          //   child: Center(
+          //     child: RotationTransition(
+          //       turns: Tween<double>(begin: 0, end: 30).animate(
+          //         CurvedAnimation(
+          //           parent: animationController,
+          //           curve: Curves.fastOutSlowIn,
+          //         ),
+          //       ),
+          //       child: childWidget,
+          //     ),
+          //   ),
+          // );
+          //
+          return Center(
+            child: RotationTransition(
+              turns: Tween<double>(begin: 0, end: 10).animate(
+                CurvedAnimation(
+                  parent: animationController,
+                  curve: Curves.fastEaseInToSlowEaseOut,
+                ),
+              ),
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 1, end: 0).animate(
+                  CurvedAnimation(
+                    parent: animationController2,
+                    curve: Curves.fastEaseInToSlowEaseOut,
+                  ),
+                ),
+                // alignment: Alignment.bottomRight,
+                child: childWidget,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
